@@ -1,0 +1,44 @@
+name: CI — AnimeTracker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint + Type check + Tests Jest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: cd backend && npm ci
+
+      - name: Lint
+        run: cd backend && npm run lint
+
+      - name: Type check
+        run: cd backend && npx tsc --noEmit
+
+      - name: Tests Jest (38 tests)
+        run: cd backend && npm test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test_secret_for_ci_minimum_32_chars_ok
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: animetracker
+          POSTGRES_USER: animetracker_user
+          POSTGRES_PASSWORD: animetracker_dev_password
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JIKAN_API_URL: https://api.jikan.moe/v4
